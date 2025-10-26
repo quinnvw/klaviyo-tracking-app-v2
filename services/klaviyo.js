@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const KLAVIYO_API_BASE = 'https://a.klaviyo.com/api';
 const PRIVATE_API_KEY = process.env.KLAVIYO_PRIVATE_API_KEY;
