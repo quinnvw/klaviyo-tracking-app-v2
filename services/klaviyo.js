@@ -140,6 +140,51 @@ async function identifyUser({ email, anonymousId, properties, timestamp }) {
       body: JSON.stringify(profileData)
     });
 
+    // Handle 409 conflict (profile already exists)
+    if (response.status === 409) {
+      const errorBody = await response.text();
+      const errorData = JSON.parse(errorBody);
+      const existingProfileId = errorData.errors[0]?.meta?.duplicate_profile_id;
+
+      if (existingProfileId) {
+        console.log(`Profile already exists with ID: ${existingProfileId}, updating instead...`);
+
+        // Update the existing profile
+        const updateResponse = await fetch(`${KLAVIYO_API_BASE}/profiles/${existingProfileId}/`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Klaviyo-API-Key ${PRIVATE_API_KEY}`,
+            'Content-Type': 'application/json',
+            'revision': '2024-10-15'
+          },
+          body: JSON.stringify(profileData)
+        });
+
+        if (!updateResponse.ok) {
+          const updateErrorBody = await updateResponse.text();
+          throw new Error(`Klaviyo API update error: ${updateResponse.status} - ${updateErrorBody}`);
+        }
+
+        const updateResponseText = await updateResponse.text();
+        let updateResult = null;
+        if (updateResponseText) {
+          try {
+            updateResult = JSON.parse(updateResponseText);
+          } catch (e) {
+            console.log('Could not parse update response as JSON:', updateResponseText);
+          }
+        }
+
+        console.log('Klaviyo profile updated successfully:', updateResult);
+
+        return {
+          profileId: existingProfileId,
+          success: true,
+          updated: true
+        };
+      }
+    }
+
     if (!response.ok) {
       const errorBody = await response.text();
       throw new Error(`Klaviyo API error: ${response.status} - ${errorBody}`);
