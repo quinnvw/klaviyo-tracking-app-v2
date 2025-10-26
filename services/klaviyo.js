@@ -14,31 +14,17 @@ async function trackEvent({ event, properties, anonymousId, userAgent, ip, times
       data: {
         type: 'event',
         attributes: {
-          properties: {
-            ...properties,
-            $event_id: anonymousId + '_' + Date.now(), // Unique event ID
-            $value: properties.$value || properties.value || 0
+          profile: {
+            anonymous_id: anonymousId
           },
           metric: {
-            data: {
-              type: 'metric',
-              attributes: {
-                name: event
-              }
-            }
+            name: event
           },
-          profile: {
-            data: {
-              type: 'profile',
-              attributes: {
-                anonymous_id: anonymousId,
-                properties: {
-                  $anonymous: true
-                }
-              }
-            }
+          properties: {
+            ...properties
           },
-          time: timestamp
+          time: timestamp,
+          unique_id: anonymousId + '_' + Date.now()
         }
       }
     };
@@ -49,6 +35,9 @@ async function trackEvent({ event, properties, anonymousId, userAgent, ip, times
     }
     if (ip) {
       eventData.data.attributes.properties.$ip = ip;
+    }
+    if (properties.value !== undefined) {
+      eventData.data.attributes.value = properties.value;
     }
 
     console.log('Tracking event to Klaviyo:', JSON.stringify(eventData, null, 2));
