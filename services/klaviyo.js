@@ -68,11 +68,21 @@ async function trackEvent({ event, properties, anonymousId, userAgent, ip, times
       throw new Error(`Klaviyo API error: ${response.status} - ${errorBody}`);
     }
 
-    const result = await response.json();
+    // Handle empty response body (202 Accepted)
+    const responseText = await response.text();
+    let result = null;
+    if (responseText) {
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.log('Could not parse response as JSON:', responseText);
+      }
+    }
+
     console.log('Klaviyo event tracked successfully:', result);
 
     return {
-      eventId: result.data?.id || anonymousId,
+      eventId: result?.data?.id || anonymousId,
       success: true
     };
 
@@ -129,11 +139,21 @@ async function identifyUser({ email, anonymousId, properties, timestamp }) {
       throw new Error(`Klaviyo API error: ${response.status} - ${errorBody}`);
     }
 
-    const result = await response.json();
+    // Handle empty response body (202 Accepted)
+    const responseText = await response.text();
+    let result = null;
+    if (responseText) {
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.log('Could not parse response as JSON:', responseText);
+      }
+    }
+
     console.log('Klaviyo user identified successfully:', result);
 
     return {
-      profileId: result.data?.id,
+      profileId: result?.data?.id,
       success: true
     };
 
