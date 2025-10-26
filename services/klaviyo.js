@@ -15,10 +15,20 @@ async function trackEvent({ event, properties, anonymousId, userAgent, ip, times
         type: 'event',
         attributes: {
           profile: {
-            anonymous_id: anonymousId
+            data: {
+              type: 'profile',
+              attributes: {
+                anonymous_id: anonymousId
+              }
+            }
           },
           metric: {
-            name: event
+            data: {
+              type: 'metric',
+              attributes: {
+                name: event
+              }
+            }
           },
           properties: {
             ...properties
