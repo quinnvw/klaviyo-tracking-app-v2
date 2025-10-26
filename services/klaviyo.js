@@ -149,7 +149,15 @@ async function identifyUser({ email, anonymousId, properties, timestamp }) {
       if (existingProfileId) {
         console.log(`Profile already exists with ID: ${existingProfileId}, updating instead...`);
 
-        // Update the existing profile
+        // Update the existing profile - need to add id to the payload
+        const updatePayload = {
+          data: {
+            type: 'profile',
+            id: existingProfileId,
+            attributes: profileData.data.attributes
+          }
+        };
+
         const updateResponse = await fetch(`${KLAVIYO_API_BASE}/profiles/${existingProfileId}/`, {
           method: 'PATCH',
           headers: {
@@ -157,7 +165,7 @@ async function identifyUser({ email, anonymousId, properties, timestamp }) {
             'Content-Type': 'application/json',
             'revision': '2024-10-15'
           },
-          body: JSON.stringify(profileData)
+          body: JSON.stringify(updatePayload)
         });
 
         if (!updateResponse.ok) {
