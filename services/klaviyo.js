@@ -96,29 +96,36 @@ async function trackEvent({ event, properties, anonymousId, userAgent, ip, times
  */
 async function identifyUser({ email, anonymousId, properties, timestamp }) {
   try {
+    // Ensure properties is an object
+    const props = properties || {};
+
     // Build the profile payload for Klaviyo
     const profileData = {
       data: {
         type: 'profile',
         attributes: {
           email: email,
-          anonymous_id: anonymousId,
           properties: {
-            ...properties
+            ...props
           }
         }
       }
     };
 
+    // Add anonymous_id if provided
+    if (anonymousId) {
+      profileData.data.attributes.anonymous_id = anonymousId;
+    }
+
     // Add first name and last name to root level if provided
-    if (properties.firstName) {
-      profileData.data.attributes.first_name = properties.firstName;
+    if (props.firstName) {
+      profileData.data.attributes.first_name = props.firstName;
     }
-    if (properties.lastName) {
-      profileData.data.attributes.last_name = properties.lastName;
+    if (props.lastName) {
+      profileData.data.attributes.last_name = props.lastName;
     }
-    if (properties.phone) {
-      profileData.data.attributes.phone_number = properties.phone;
+    if (props.phone) {
+      profileData.data.attributes.phone_number = props.phone;
     }
 
     console.log('Identifying user in Klaviyo:', JSON.stringify(profileData, null, 2));
